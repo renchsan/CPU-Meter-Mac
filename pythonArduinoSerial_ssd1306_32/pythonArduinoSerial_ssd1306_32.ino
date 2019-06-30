@@ -17,9 +17,6 @@
 #define OLED_RESET 4
 Adafruit_SSD1306 display(OLED_RESET);
 
-#define XPOS 0
-#define YPOS 1
-
 #define LOGO16_GLCD_HEIGHT 16
 #define LOGO16_GLCD_WIDTH  16
 static const unsigned char PROGMEM logo16_glcd_bmp[] =
@@ -64,29 +61,72 @@ void setup()   {
 
   // Clear the buffer.
   display.clearDisplay();
+
+  uiInit();
 }
 
 const byte numChars = 6;
 char receivedChars[numChars];   // an array to store the received data
+int cursorX = 24;
+String serialString;
+float serialFloat;
+int serialInt;
+String prevString;
 
 void loop() {
+  
   if (Serial.available()) {
-    display.setCursor(0, 0);
-    display.setTextSize(3);
-    display.setTextColor(WHITE);
-    display.clearDisplay();
-//    char serialListener = Serial.read();    // Recieve a single char
-//    Serial.println(serialListener);
-    String serialString = Serial.readString();    // Recieve an entire string
-
-    if (serialString != "") {
-      digitalWrite(LED, HIGH);
-      display.print(serialString + "%");
+    serialString = Serial.readString();    // Recieve an entire string
+    
+    if (prevString == serialString){
+      return;
+      
     } else {
+      prevString = serialString;
+      serialFloat = serialString.toFloat();
+      serialInt = int(serialFloat);
+      if (serialInt >= 100) {
+        cursorX = 24;
+      } if (serialInt >= 10) {
+        cursorX = 48;
+      } if (serialInt < 10 && serialInt >= 0){
+        cursorX = 64;
+      }
+      
+      erase();
       digitalWrite(LED, LOW);
-    }
+      display.setCursor(cursorX, 0);
+      display.setTextSize(3);
+      
+      if (serialString != "") {
+        digitalWrite(LED, HIGH);
+        display.print(serialInt);
+        display.setTextSize(2);
+        display.print("%");
+      } else {
+        digitalWrite(LED, LOW);
+      }
 
     display.display();
-    delay(50);
+    delay(250);
+    }
+    
+  } else {
+//    delay(50);
   }
 }  // END LOOP
+
+void uiInit(){
+  display.setCursor(0, 5);
+  display.setTextSize(1);
+  display.setTextColor(color);
+  display.print("CPU");
+  display.display();
+}
+
+void erase(){
+  color = BLACK;
+  display.fillRect(20,0,128,32, color);
+  display.display();
+  color = WHITE;
+}

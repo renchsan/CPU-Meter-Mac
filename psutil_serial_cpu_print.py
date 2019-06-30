@@ -11,19 +11,21 @@ import serial
 import psutil
 
 # ser = serial.Serial(port='/dev/cu.usbserial-1410',baudrate=115200,parity=serial.PARITY_ODD,stopbits=serial.STOPBITS_ONE,bytesize=serial.EIGHTBITS)
-arduino = serial.Serial('/dev/cu.usbserial-1410', 9600)
+arduino = serial.Serial('/dev/cu.usbserial-1420', 9600)
+
+command = ""
 
 def writeFunction():
-	command = ""
 	# command = raw_input("Type something..: ");
+	time.sleep(.5)
 	command = str(psutil.cpu_percent(interval=None, percpu=False))
 	
-	if command != "":
+	if command != "0.0":
 		print command + "%"
-		time.sleep(3)
+		time.sleep(.5)
 		arduino.write(command)
 		writeFunction()
-		# time.sleep(3)
+		
 	else:
 		print "Sorry...!"
 		writeFunction()
